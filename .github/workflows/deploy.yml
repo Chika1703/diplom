@@ -1,42 +1,25 @@
 name: Test SSH via NAT
 
 on:
-  workflow_dispatch:  # позволяет запускать вручную
+  workflow_dispatch:
 
 jobs:
-  ssh-test:
+  ssh_test:
     runs-on: ubuntu-latest
-
-    env:
-      LAMP_IP: ${{ secrets.LAMP_IP }}
-      NAT_IP: ${{ secrets.NAT_IP }}
-      ANSIBLE_USERNAME: ${{ secrets.ANSIBLE_USERNAME }}
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup SSH
+      - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          # Загружаем приватный ключ из секрета
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Добавляем ключи NAT в known_hosts
-          cat <<'EOF' >> ~/.ssh/known_hosts
-          |1|tVue8CQ7E++bv31vjH/f5ltIGMQ=|O963SDI9AQOniuREuAJhi19kX+E= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJPHi9N3w+d4GFHnLqQtujaYTIdudrb/yzIBWUaerywkBbWv/6hNkOKcBL8RISC2iFJ357AB8cEe+58ojpxSpic=
-          |1|WpDXG/SnzDWGaIXzUh32qgQyyLE=|BkcHlm6XhjmFtXmGLX0GnW9N/v0= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDvtdu8hw8Y+At7waH7/30DSK4X0h7JHb90zRpOtYr9rcyWjrFKkaYDbj96lVKAnFDbYrXg9yVoa/MPM/ri/lWhWAeqHdY+Bbpgcrmh36xgWBPsYmzT8nxwBt2XhM4MTfXoj/H+iMI2oR4lpAdiQT9Ef98ZnvHrMDvvmfDZt/tz6NX+jkvGGIto9vAVg84avzvR51ZeK2VkyyqarWEAzuZ33uxRxzoNKfLNDwIenXmIPANrUT8bN9+uDF9NBMYXnOtOjdjbypcBFkngcKKHBH8tCSJc2FkGOGL+664AjlmlfQwA2DuxqNEpXz5G1QTAYDVoq1RCmoXR1SNG0YuxiqifFdjjnYcI9mtU3t/S6bsZmZMtqfIy46/BzqoAyJdeWfYcu8Rn5IdacaHTkOhSUScMZdLpbeJR26ET5B/sHaO3xBpGhNL88oet6CUR+ctjSZceKlPGNWDWfaMoUPx13qMgPapfb54zSwHMULXCxaDrOG0Dk4RGB7/+qTU1bX/E9Wk=
-          |1|hBBbuns6r0zvdWQGdhXLjmjYO1Y=|TnWFJFRJiE4a2siavmvb81aA0vk= ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGYe6DXP419gy6FWBBCIDpNUpxYluWsJmisuXl3bGnr1
-          EOF
-
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Test SSH connection
+      - name: Test SSH connection via NAT
         run: |
-          ssh -o StrictHostKeyChecking=yes \
-              -o ProxyJump="${ANSIBLE_USERNAME}@${NAT_IP}" \
-              "${ANSIBLE_USERNAME}@${LAMP_IP}" \
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -o ProxyJump="${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.NAT_IP }}" \
+              ${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.LAMP_IP }} \
               "echo 'CONNECTED from GitHub Actions!' && uname -a && curl -sS http://localhost:80 || echo 'curl_failed'"
