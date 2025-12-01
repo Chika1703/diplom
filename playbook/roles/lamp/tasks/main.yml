@@ -60,7 +60,7 @@
       <body>
         <h1>Hello from {{ inventory_hostname }}</h1>
         <p>Current datetime: {{ ansible_date_time.iso8601 }}</p>
-        <p>Deployed via CI/CD: Yes ✅</p>
+        <p>Deployed via CI/CD: Yes</p>
       </body>
       </html>
     dest: /var/www/html/index.html
