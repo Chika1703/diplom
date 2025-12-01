@@ -9,34 +9,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
+      # 1. Клонируем репозиторий
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Настроить SSH ключ
+      # 2. Устанавливаем SSH ключ из секрета
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # 3. Установить Ansible
+      # 3. Устанавливаем Ansible
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible sshpass
 
-      # 4. Создать inventory на лету
+      # 4. Генерируем inventory на лету, используя NAT_IP из секрета
       - name: Generate inventory file
         run: |
           echo "[lamp_servers]" > inventory.ini
-          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=root@${{ secrets.NAT_IP }}'" >> inventory.ini
-          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=root@${{ secrets.NAT_IP }}'" >> inventory.ini
+          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
+          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
           echo "" >> inventory.ini
           echo "[lamp_servers:vars]" >> inventory.ini
           echo "nat_ip=${{ secrets.NAT_IP }}" >> inventory.ini
 
-      # 5. Запустить Ansible Playbook
+      # 5. Запускаем Ansible playbook
       - name: Run Ansible Playbook
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
