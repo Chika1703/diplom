@@ -18,26 +18,27 @@ resource "twc_server" "nat" {
     ip = "192.168.0.220"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir -p /root/.ssh",
-      "echo '${file(var.private_key_path)}' > /root/.ssh/id_rsa",
-      "chmod 600 /root/.ssh/id_rsa",
-      "sudo sysctl -w net.ipv4.ip_forward=1",
-      "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf",
-      "sudo apt-get update -y",
-      "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent",
-      "sudo iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -o eth0 -j MASQUERADE",
-      "sudo iptables -A FORWARD -s 192.168.0.0/24 -o eth0 -j ACCEPT",
-      "sudo iptables -A FORWARD -d 192.168.0.0/24 -m state --state ESTABLISHED,RELATED -i eth0 -j ACCEPT",
-      "sudo netfilter-persistent save"
-    ]
+provisioner "remote-exec" {
+  inline = [
+    "mkdir -p /root/.ssh",
+    "echo \"${var.private_key_path}\" > /root/.ssh/id_rsa",
+    "chmod 600 /root/.ssh/id_rsa",
+    "sudo sysctl -w net.ipv4.ip_forward=1",
+    "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf",
+    "sudo apt-get update -y",
+    "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent",
+    "sudo iptables -t nat -A POSTROUTING -s 192.168.0.0/24 -o eth0 -j MASQUERADE",
+    "sudo iptables -A FORWARD -s 192.168.0.0/24 -o eth0 -j ACCEPT",
+    "sudo iptables -A FORWARD -d 192.168.0.0/24 -m state --state ESTABLISHED,RELATED -i eth0 -j ACCEPT",
+    "sudo netfilter-persistent save"
+  ]
 
-    connection {
-      type        = "ssh"
-      user        = "root"
-      private_key = file(var.private_key_path)
-      host        = twc_floating_ip.nat_ip.ip
-    }
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = var.private_key_path
+    host        = twc_floating_ip.nat_ip.ip
   }
+}
+
 }

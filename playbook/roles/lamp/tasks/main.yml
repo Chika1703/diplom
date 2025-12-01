@@ -52,15 +52,23 @@
     state: started
     enabled: yes
 
-- name: Deploy test index.html
+- name: Deploy dynamic test page
   copy:
-    content: "<h1>Hello from {{ inventory_hostname }}</h1>"
+    content: |
+      <html>
+      <head><title>Server Info</title></head>
+      <body>
+        <h1>Hello from {{ inventory_hostname }}</h1>
+        <p>Current datetime: {{ ansible_date_time.iso8601 }}</p>
+        <p>Deployed via CI/CD: Yes ✅</p>
+      </body>
+      </html>
     dest: /var/www/html/index.html
     owner: www-data
     group: www-data
     mode: '0644'
 
-- name: Deploy test index.php
+- name: Deploy PHP test page
   copy:
     content: "<?php phpinfo(); ?>"
     dest: /var/www/html/index.php

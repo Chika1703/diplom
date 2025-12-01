@@ -12,6 +12,7 @@ variable "ssh_key_id" {
 
 variable "private_key_path" {
   type = string
+  sensitive = true
 }
 
 # VPC

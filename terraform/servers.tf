@@ -5,6 +5,7 @@ resource "twc_server" "lamp_group" {
   os_id             = 99
   project_id        = var.project_id
   availability_zone = "msk-1"
+  is_root_password_required = false
   ssh_keys_ids      = [var.ssh_key_id]
 
   local_network {

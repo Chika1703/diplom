@@ -1,8 +1,8 @@
-name: CI-CD Deploy
+name: Deploy infrastructure via Terraform & Ansible
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -12,32 +12,49 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y ansible
-
-      - name: Add SSH key
+      # Установка SSH ключа
+      - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Disable host key checking
-        run: |
-          echo "Host *" > ~/.ssh/config
-          echo "    StrictHostKeyChecking no" >> ~/.ssh/config
-          chmod 600 ~/.ssh/config
+      # Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-      - name: Generate Ansible inventory
-        run: |
-          echo "[lamp]" > inventory.ini
-          echo "lamp1 ansible_host=192.168.0.10 ansible_user=root" >> inventory.ini
-          echo "lamp2 ansible_host=192.168.0.11 ansible_user=root" >> inventory.ini
-          echo "[nat]" >> inventory.ini
-          echo "nat ansible_host=${{ secrets.NAT_IP }} ansible_user=root" >> inventory.ini
-          cat inventory.ini
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
 
-      - name: Run Ansible playbook
+      - name: Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve
+
+      # Получаем NAT IP из Terraform
+      - name: Get NAT IP
+        id: nat
+        working-directory: ./terraform
         run: |
-          ansible-playbook -i inventory.ini playbook/site.yml
+          echo "nat_ip=$(terraform output -raw nat_public_ip)" >> $GITHUB_ENV
+
+      # Установка Ansible
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible sshpass
+
+      # Запуск Ansible Playbook
+      - name: Run Ansible
+        working-directory: ./playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          ansible-playbook \
+            -i ../terraform/inventory.ini \
+            site.yml \
+            --user=${{ secrets.ANSIBLE_USERNAME }} \
+            --private-key ~/.ssh/id_rsa
+
+      - name: Final output
+        run: echo "Deployment complete. NAT IP = ${{ env.nat_ip }}"
