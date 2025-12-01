@@ -9,39 +9,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Клонируем репозиторий
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Устанавливаем SSH ключ из секрета
+      # 2. Настроить SSH ключ
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # 3. Устанавливаем Ansible
+      # 3. Установить Ansible
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible sshpass
 
-      # 4. Создаём inventory на лету, используя NAT_IP из секрета
+      # 4. Создать inventory на лету
       - name: Generate inventory file
         run: |
           echo "[lamp_servers]" > inventory.ini
-          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
-          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
+          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=root@${{ secrets.NAT_IP }}'" >> inventory.ini
+          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyJump=root@${{ secrets.NAT_IP }}'" >> inventory.ini
           echo "" >> inventory.ini
           echo "[lamp_servers:vars]" >> inventory.ini
           echo "nat_ip=${{ secrets.NAT_IP }}" >> inventory.ini
 
-
-      # 5. Запускаем Ansible playbook
+      # 5. Запустить Ansible Playbook
       - name: Run Ansible Playbook
-        run: >
-          ansible-playbook
-          -i inventory.ini
-          playbook/site.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          ansible-playbook -i inventory.ini playbook/site.yml
