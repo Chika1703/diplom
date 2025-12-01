@@ -26,19 +26,21 @@ jobs:
           sudo apt update
           sudo apt install -y ansible sshpass
 
-      # 4. Генерируем inventory на лету, используя NAT_IP из секрета
+      # 4. Генерируем inventory на лету, используя NAT_IP
       - name: Generate inventory file
         run: |
-          echo "[lamp_servers]" > inventory.ini
-          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
-          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
-          echo "" >> inventory.ini
-          echo "[lamp_servers:vars]" >> inventory.ini
-          echo "nat_ip=${{ secrets.NAT_IP }}" >> inventory.ini
+          cat <<EOF > inventory.ini
+          [lamp_servers]
+          lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}"'
+          lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}"'
+        
+          [lamp_servers:vars]
+          nat_ip=${{ secrets.NAT_IP }}
+          EOF
 
       # 5. Запускаем Ansible playbook
       - name: Run Ansible Playbook
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
           ansible-playbook -i inventory.ini playbook/site.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
