@@ -1,46 +1,33 @@
-name: Deploy LAMP via Ansible
+name: Test SSH via NAT with Ansible
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  ansible-deploy:
+  ssh_test:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Клонируем репозиторий
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # 2. Устанавливаем SSH ключ из секрета
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # 3. Устанавливаем Ansible
-      - name: Install Ansible
+      - name: Test SSH connection via NAT
         run: |
-          sudo apt update
-          sudo apt install -y ansible sshpass
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa \
+            -o ProxyJump="${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.NAT_IP }}" \
+            ${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.LAMP_IP }} \
+            "echo 'CONNECTED from GitHub Actions!' && uname -a && curl -sS http://localhost:80 || echo 'curl_failed'"
 
-      # 4. Генерируем inventory на лету, используя NAT_IP
-      - name: Generate inventory file
-        run: |
-          cat <<EOF > inventory.ini
-          [lamp_servers]
-          lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}"'
-          lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand="ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}"'
-        
-          [lamp_servers:vars]
-          nat_ip=${{ secrets.NAT_IP }}
-          EOF
-
-      # 5. Запускаем Ansible playbook
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i inventory.ini playbook/site.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+          ansible-playbook -i inventory.ini playbook/site.yml \
+            --user ${{ secrets.ANSIBLE_USERNAME }} \
+            --private-key ~/.ssh/id_rsa
