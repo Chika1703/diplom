@@ -1,0 +1,43 @@
+name: CI-CD Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Add SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Disable host key checking
+        run: |
+          echo "Host *" > ~/.ssh/config
+          echo "    StrictHostKeyChecking no" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+
+      - name: Generate Ansible inventory
+        run: |
+          echo "[lamp]" > inventory.ini
+          echo "lamp1 ansible_host=192.168.0.10 ansible_user=root" >> inventory.ini
+          echo "lamp2 ansible_host=192.168.0.11 ansible_user=root" >> inventory.ini
+          echo "[nat]" >> inventory.ini
+          echo "nat ansible_host=${{ secrets.NAT_IP }} ansible_user=root" >> inventory.ini
+          cat inventory.ini
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook -i inventory.ini playbook/site.yml
