@@ -1,11 +1,11 @@
-name: Deploy infrastructure via Terraform & Ansible
+name: Run Ansible on existing servers
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+  ansible:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,32 +19,13 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        working-directory: ./terraform
-        run: terraform init
-
-      - name: Terraform Apply
-        working-directory: ./terraform
-        run: terraform apply -auto-approve
-
-      # Получаем NAT IP из Terraform
-      - name: Get NAT IP
-        id: nat
-        working-directory: ./terraform
-        run: |
-          echo "nat_ip=$(terraform output -raw nat_public_ip)" >> $GITHUB_ENV
-
       # Установка Ansible
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible sshpass
 
-      # Запуск Ansible Playbook
+      # Запуск Ansible Playbook с существующим inventory
       - name: Run Ansible
         working-directory: ./playbook
         env:
@@ -57,4 +38,4 @@ jobs:
             --private-key ~/.ssh/id_rsa
 
       - name: Final output
-        run: echo "Deployment complete. NAT IP = ${{ env.nat_ip }}"
+        run: echo "Ansible deployment complete."
