@@ -10,6 +10,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Add NAT and LAMP server host keys
+        run: |
+          mkdir -p ~/.ssh
+          
+          # NAT server keys
+          echo "89.169.3.160 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGYe6DXP419gy6FWBBCIDpNUpxYluWsJmisuXl3bGnr1" >> ~/.ssh/known_hosts
+          echo "89.169.3.160 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDvtdu8hw8Y+At7waH7/30DSK4X0h7JHb90zRpOtYr9rcyWjrFKkaYDbj96lVKAnFDbYrXg9yVoa/MPM/ri/lWhWAeqHdY+Bbpgcrmh36xgWBPsYmzT8nxwBt2XhM4MTfXoj/H+iMI2oR4lpAdiQT9Ef98ZnvHrMDvvmfDZt/tz6NX+jkvGGIto9vAVg84avzvR51ZeK2VkyyqarWEAzuZ33uxRxzoNKfLNDwIenXmIPANrUT8bN9+uDF9NBMYXnOtOjdjbypcBFkngcKKHBH8tCSJc2FkGOGL+664AjlmlfQwA2DuxqNEpXz5G1QTAYDVoq1RCmoXR1SNG0YuxiqifFdjjnYcI9mtU3t/S6bsZmZMtqfIy46/BzqoAyJdeWfYcu8Rn5IdacaHTkOhSUScMZdLpbeJR26ET5B/sHaO3xBpGhNL88oet6CUR+ctjSZceKlPGNWDWfaMoUPx13qMgPapfb54zSwHMULXCxaDrOG0Dk4RGB7/+qTU1bX/E9Wk=" >> ~/.ssh/known_hosts
+          echo "89.169.3.160 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJPHi9N3w+d4GFHnLqQtujaYTIdudrb/yzIBWUaerywkBbWv/6hNkOKcBL8RISC2iFJ357AB8cEe+58ojpxSpic=" >> ~/.ssh/known_hosts
+
+          # LAMP server keys
+          echo "192.168.0.10 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCdCjdGZqBJS3Qa+8P671ei++bGvegfK11YTYV30W3NkqREujx9dJdJu7GeIb4inFjFHpvgndWiedCOo03pawE0LPVjjAsB5pw+iwvcJUCGeougwBNkApSUu10PnPV7WjBWlH3SNYxzwkh0TAk/JM5iy0Bc72aK0jmeFY52X7m0KH7gRbHpvC85qpNmYT+0dMZ/XBp4l7wMBuNUkAdvV1uUOqSwQsOYVI2QuE+YjzFyXZ4I8pbDCAyswbofob7YYQ/XPh9vaHQYN99t0sPU0jXF5vGGlwxywbLWwfIUtTrEp1+g2N6G0HHkD2zz5N8ov4TLTe9m583b0ZdP9WTsJ75ZFpzhZKj7KTucHNpiPCA+Gk6WslU4KIWheHxfRE/Fu5Po4rJaEx1x8JDDUYqaADuK1a2t8k+W5M1ZFeKitjVI3MRIUablks/uQFz4rfaqJ4FhIy87TpmwWXrnxzDUgqezkEdpZP3b15L514df1IPIGm1ir8IBStIW2tEwXVVUr/E=" >> ~/.ssh/known_hosts
+          echo "192.168.0.10 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBC1FYXLda6tn6QmTlTpg5/nPqevUAm7RFAr96AjUP9Tnk5kjnuRi05SUgvs+/uQPiA5Jg+esnGM1XAgXmfcDEro=" >> ~/.ssh/known_hosts
+          echo "192.168.0.10 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOCRX0AMIgIkZf95doLEnZJ8ffoQG/JGLJ2DWcecuecb" >> ~/.ssh/known_hosts
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -18,7 +32,7 @@ jobs:
 
       - name: Test SSH connection via NAT
         run: |
-          ssh -o StrictHostKeyChecking=no \
+          ssh -o StrictHostKeyChecking=yes \
               -i ~/.ssh/id_rsa \
               -o ProxyJump="${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.NAT_IP }}" \
               ${{ secrets.ANSIBLE_USERNAME }}@${{ secrets.LAMP_IP }} \
