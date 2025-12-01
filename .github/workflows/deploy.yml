@@ -1,41 +1,47 @@
-name: Run Ansible on existing servers
+name: Deploy LAMP via Ansible
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  ansible:
+  ansible-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # 1. Клонируем репозиторий
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Установка SSH ключа
-      - name: Install SSH key
+      # 2. Устанавливаем SSH ключ из секрета
+      - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # Установка Ansible
+      # 3. Устанавливаем Ansible
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible sshpass
 
-      # Запуск Ansible Playbook с существующим inventory
-      - name: Run Ansible
-        working-directory: ./playbook
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
+      # 4. Создаём inventory на лету, используя NAT_IP из секрета
+      - name: Generate inventory file
         run: |
-          ansible-playbook \
-            -i ../terraform/inventory.ini \
-            site.yml \
-            --user=${{ secrets.ANSIBLE_USERNAME }} \
-            --private-key ~/.ssh/id_rsa
+          echo "[lamp_servers]" > inventory.ini
+          echo "lamp-server-1 ansible_host=192.168.0.10 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
+          echo "lamp-server-2 ansible_host=192.168.0.11 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -i ~/.ssh/id_rsa -W %h:%p root@${{ secrets.NAT_IP }}\"'" >> inventory.ini
+          echo "" >> inventory.ini
+          echo "[lamp_servers:vars]" >> inventory.ini
+          echo "nat_ip=${{ secrets.NAT_IP }}" >> inventory.ini
 
-      - name: Final output
-        run: echo "Ansible deployment complete."
+
+      # 5. Запускаем Ansible playbook
+      - name: Run Ansible Playbook
+        run: >
+        ansible-playbook
+        -i inventory.ini
+        playbook/site.yml
+        env:
+        ANSIBLE_HOST_KEY_CHECKING: "False"
