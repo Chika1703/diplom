@@ -34,7 +34,7 @@ variable "location" {
 # NAT
 variable "nat_preset_id" {
   type    = number
-  default = 4795
+  default = 4799
 }
 
 variable "nat_os_id" {

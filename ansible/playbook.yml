@@ -1,0 +1,63 @@
+- name: Настройка firewall UFW
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Установить ufw
+      apt:
+        name: ufw
+        state: present
+
+    - name: Включить ufw (инициализация)
+      ufw:
+        state: enabled
+        policy: allow
+      ignore_errors: yes
+
+    - name: Разрешить SSH
+      ufw:
+        rule: allow
+        port: 22
+
+    - name: Разрешить node-exporter (9100)
+      ufw:
+        rule: allow
+        port: 9100
+        proto: tcp
+
+    - name: Разрешить NodePort Grafana (30300) и Prometheus (30900) на мастере
+      when: "'k8s-master' in group_names"
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - 30300
+        - 30900
+
+
+- name: Деплой тестового приложения и мониторинга
+  hosts: k8s-master
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Обновить список пакетов
+      apt:
+        update_cache: yes
+
+    - name: Установить python3-клиент Kubernetes
+      apt:
+        name: python3-kubernetes
+        state: present
+
+    - name: Копировать kubeconfig
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+      ignore_errors: yes
+
+  roles:
+    - monitoring
+    - test-app

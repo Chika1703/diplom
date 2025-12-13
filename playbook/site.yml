@@ -1,5 +1,0 @@
-- name: Install LAMP packages
-  hosts: lamp_servers
-  become: yes
-  roles:
-    - lamp

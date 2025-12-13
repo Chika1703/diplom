@@ -1,0 +1,14 @@
+- name: Создать namespace test-app
+  k8s:
+    state: present
+    definition: "{{ lookup('file', '../k8s/namespace.yml') }}"
+
+- name: Деплой тестового приложения
+  k8s:
+    state: present
+    definition: "{{ lookup('file', '../k8s/deployment.yml') }}"
+
+- name: Создать сервис приложения
+  k8s:
+    state: present
+    definition: "{{ lookup('file', '../k8s/service.yml') }}"

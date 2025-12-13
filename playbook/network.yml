@@ -1,0 +1,19 @@
+- name: Настроить сеть для выхода в интернет через NAT
+  hosts: k8s-workers
+  become: yes
+  tasks:
+    - name: Настроить DNS
+      lineinfile:
+        path: /etc/systemd/resolved.conf
+        regexp: '^#DNS='
+        line: 'DNS=8.8.8.8 1.1.1.1'
+        state: present
+
+    - name: Добавить default route через NAT
+      command: ip route add default via 192.168.0.220
+      ignore_errors: yes
+
+    - name: Перезапустить systemd-resolved
+      systemd:
+        name: systemd-resolved
+        state: restarted

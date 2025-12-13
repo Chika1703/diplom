@@ -33,19 +33,19 @@ resource "twc_lb" "lamp_lb" {
     fall    = 3
     inter   = 10
     path    = "/"
-    port    = 80
-    proto   = "tcp"
+    port    = 30080
+    proto   = "http"
     rise    = 2
     timeout = 5
   }
 }
 
-resource "twc_lb_rule" "lamp_rule_http" {
+resource "twc_lb_rule" "app_http" {
   lb_id          = twc_lb.lamp_lb.id
   balancer_proto = "http"
   balancer_port  = 80
   server_proto   = "http"
-  server_port    = 80
+  server_port    = 30080
 }
 
 resource "twc_lb_rule" "lamp_rule_https" {
@@ -53,5 +53,5 @@ resource "twc_lb_rule" "lamp_rule_https" {
   balancer_proto = "https"
   balancer_port  = 443
   server_proto   = "http"
-  server_port    = 80
+  server_port    = 30080
 }

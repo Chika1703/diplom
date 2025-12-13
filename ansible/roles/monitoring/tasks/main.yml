@@ -1,0 +1,51 @@
+- name: Создать namespace monitoring
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/namespace.yml') }}"
+
+- name: Создать RBAC для Prometheus
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/prometheus-rbac.yml') }}"
+
+- name: Создать ConfigMap prometheus-config
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/prometheus-configmap.yml') }}"
+
+- name: Деплой Prometheus
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/prometheus-deployment.yml') }}"
+
+- name: Создать сервис Prometheus
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/prometheus-service.yml') }}"
+
+- name: Деплой Grafana
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/grafana-deployment.yml') }}"
+
+- name: Создать сервис Grafana
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/grafana-service.yml') }}"
+
+- name: Deploy node-exporter DaemonSet
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/node-exporter-daemonset.yml') }}"
+
+- name: Создать сервис node-exporter
+  k8s:
+    state: present
+    definition: "{{ lookup('file', role_path + '/k8s/node-exporter-service.yml') }}"
+
+- name: Deploy kube-state-metrics via Helm
+  community.kubernetes.helm:
+    name: kube-state-metrics
+    chart_ref: prometheus-community/kube-state-metrics
+    namespace: monitoring
+    create_namespace: true
