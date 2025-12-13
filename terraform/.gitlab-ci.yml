@@ -1,0 +1,35 @@
+image: hashicorp/terraform:1.6
+
+stages:
+  - validate
+  - plan
+  - apply
+
+variables:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+before_script:
+  - cd terraform
+  - terraform --version
+
+validate:
+  stage: validate
+  script:
+    - terraform init -backend=false
+    - terraform validate
+
+plan:
+  stage: plan
+  script:
+    - terraform init
+    - terraform plan
+  only:
+    - main
+
+apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve
+  only:
+    - main
