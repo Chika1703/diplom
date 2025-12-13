@@ -13,7 +13,6 @@ variables:
 
 before_script:
   - cd terraform
-  # Создаём файл с приватным ключом из CI/CD переменной
   - echo "$TF_VAR_private_key_content" > private_key.pem
   - chmod 600 private_key.pem
   - terraform --version
@@ -27,17 +26,26 @@ validate:
 plan:
   stage: plan
   script:
-    - rm -rf .terraform
+    - cd terraform
+    - echo "$TF_VAR_private_key_content" > private_key.pem
+    - chmod 600 private_key.pem
     - terraform init
-    # Передаём путь к приватному ключу через -var
     - terraform plan -var="private_key_path=private_key.pem" -out=tfplan
+  artifacts:
+    paths:
+      - terraform/tfplan
+    expire_in: 1 hour
   only:
     - main
 
 apply:
   stage: apply
+  dependencies:
+    - plan
   script:
-    # Передаём путь к приватному ключу также при apply
+    - cd terraform
+    - echo "$TF_VAR_private_key_content" > private_key.pem
+    - chmod 600 private_key.pem
     - terraform apply -var="private_key_path=private_key.pem" -auto-approve tfplan
   only:
     - main
