@@ -31,7 +31,7 @@ plan:
     - terraform plan -var="private_key_path=private_key.pem" -out=tfplan
   artifacts:
     paths:
-      - tfplan
+      - terraform/tfplan
     expire_in: 1 hour
   only:
     - main
