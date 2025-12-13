@@ -41,6 +41,6 @@ apply:
   dependencies:
     - plan
   script:
-    - terraform apply -var="private_key_path=private_key.pem" -auto-approve ../tfplan
+    - terraform apply -var="private_key_path=private_key.pem" -auto-approve tfplan
   only:
     - main
