@@ -42,6 +42,6 @@ variable "nat_os_id" {
   default = 99
 }
 
-variable "test" {
-  default = "test"
+variable "test2" {
+  default = "test2"
 }
