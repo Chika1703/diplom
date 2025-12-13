@@ -31,7 +31,7 @@ plan:
     - terraform plan -var="private_key_path=private_key.pem" -out=tfplan
   artifacts:
     paths:
-      - terraform/tfplan
+      - tfplan
     expire_in: 1 hour
   only:
     - main
@@ -41,6 +41,10 @@ apply:
   dependencies:
     - plan
   script:
-    - terraform apply -var="private_key_path=private_key.pem" -auto-approve terraform/tfplan
+    - cd terraform
+    - echo "$TF_VAR_private_key_content" > private_key.pem
+    - chmod 600 private_key.pem
+    - terraform apply -var="private_key_path=private_key.pem" -auto-approve ../tfplan
   only:
     - main
+
