@@ -21,7 +21,7 @@ resource "twc_server" "nat" {
 provisioner "remote-exec" {
   inline = [
     "mkdir -p /root/.ssh",
-    "echo \"${var.private_key_path}\" > /root/.ssh/id_rsa",
+    "echo '${var.private_key_content}' > /root/.ssh/id_rsa",
     "chmod 600 /root/.ssh/id_rsa",
     "sudo sysctl -w net.ipv4.ip_forward=1",
     "echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf",

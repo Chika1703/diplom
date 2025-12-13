@@ -45,3 +45,7 @@ variable "nat_os_id" {
 variable "test2" {
   default = "test2"
 }
+
+variable "private_key_content" {
+  type = string
+}
