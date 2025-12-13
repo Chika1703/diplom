@@ -10,7 +10,6 @@ variables:
   TF_INPUT: "false"
 
 before_script:
-  # Переходим в папку с Terraform кодом
   - cd terraform
   - terraform --version
 
@@ -31,7 +30,6 @@ plan:
 apply:
   stage: apply
   script:
-    # Применяем план без подтверждения
     - terraform apply -auto-approve tfplan
   only:
     - main
