@@ -15,7 +15,8 @@ before_script:
   - cd terraform
   - echo "$TF_VAR_private_key_content" > private_key.pem
   - chmod 600 private_key.pem
-  - terraform --version
+  # Если tfstate нет (первый запуск), создаём его из переменной
+  - '[ ! -f terraform.tfstate ] && echo "$TFSTATE_JSON" > terraform.tfstate || echo "Using existing tfstate"'
 
 validate:
   stage: validate
@@ -30,10 +31,9 @@ plan:
     - terraform plan -var="private_key_path=private_key.pem" -out=tfplan
   artifacts:
     paths:
-      - terraform/tfplan
-      - terraform/.terraform
-      - terraform/terraform.tfstate   # захватываем state как артефакт
-    expire_in: 7 days
+      - tfplan
+      - terraform.tfstate
+    expire_in: 1 hour
   only:
     - main
 
@@ -43,5 +43,9 @@ apply:
     - plan
   script:
     - terraform apply -auto-approve tfplan
+  artifacts:
+    paths:
+      - terraform.tfstate
+    expire_in: 1 hour
   only:
     - main
