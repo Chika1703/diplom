@@ -13,6 +13,8 @@ variables:
 
 before_script:
   - cd terraform
+  - echo "$TF_VAR_private_key_content" > private_key.pem
+  - chmod 600 private_key.pem
   - terraform --version
 
 validate:
