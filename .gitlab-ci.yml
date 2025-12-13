@@ -27,12 +27,12 @@ plan:
   stage: plan
   script:
     - rm -rf .terraform
-    - terraform init
+    - terraform init -backend=false
     - terraform plan -var="private_key_path=private_key.pem" -out=tfplan
   artifacts:
     paths:
       - terraform/tfplan
-      - terraform/.terraform
+      - terraform/terraform.tfstate
       - terraform/.terraform.lock.hcl
     expire_in: 1 hour
   only:
@@ -43,6 +43,11 @@ apply:
   dependencies:
     - plan
   script:
+    - terraform init -backend=false
     - terraform apply -auto-approve tfplan
+  artifacts:
+    paths:
+      - terraform/terraform.tfstate
+    expire_in: 1 hour
   only:
     - main
