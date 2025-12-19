@@ -1,0 +1,9 @@
+[submodule "k8s"]
+	path = k8s
+	url = https://gitlab.com/dimakolb2/k8s
+[submodule "terraform"]
+	path = terraform
+	url = https://gitlab.com/dimakolb2/terraform
+[submodule "test-app"]
+	path = test-app
+	url = https://gitlab.com/dimakolb2/test-app
