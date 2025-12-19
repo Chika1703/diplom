@@ -152,16 +152,16 @@ Terraform полностью управляет жизненным циклом 
 
 `diplom1/test-app/icons/`
 
-- ![Terraform_1.jpg](https://github.com/Chika1703/diplom/jpg/Terraform_1.jpg)  
-- ![Terraform_2.jpg](https://github.com/Chika1703/diplom/jpg/Terraform_2.jpg)  
-- ![Terraform_3.jpg](https://github.com/Chika1703/diplom/jpg/Terraform_3.jpg)  
-- ![k8s_1.jpg](https://github.com/Chika1703/diplom/jpg/k8s_1.jpg)  
-- ![k8s_2.jpg](https://github.com/Chika1703/diplom/jpg/k8s_2.jpg)  
-- ![k8s_3.jpg](https://github.com/Chika1703/diplom/jpg/k8s_3.jpg)  
-- ![Monitoring_1.jpg](https://github.com/Chika1703/diplom/jpg/Monitoring_1.jpg)  
-- ![Monitoring_2.jpg](https://github.com/Chika1703/diplom/jpg/Monitoring_2.jpg)  
-- ![App_1.jpg](https://github.com/Chika1703/diplom/jpg/App_1.jpg)  
-- ![App_2.jpg](https://github.com/Chika1703/diplom/jpg/App_2.jpg)  
+- ![Terraform_1.jpg](https://github.com/Chika1703/diplom/test-app/icons/Terraform_1.jpg)  
+- ![Terraform_2.jpg](https://github.com/Chika1703/diplom/test-app/icons/Terraform_2.jpg)  
+- ![Terraform_3.jpg](https://github.com/Chika1703/diplom/test-app/icons/Terraform_3.jpg)  
+- ![k8s_1.jpg](https://github.com/Chika1703/diplom/test-app/icons/k8s_1.jpg)  
+- ![k8s_2.jpg](https://github.com/Chika1703/diplom/test-app/icons/k8s_2.jpg)  
+- ![k8s_3.jpg](https://github.com/Chika1703/diplom/test-app/icons/k8s_3.jpg)  
+- ![Monitoring_1.jpg](https://github.com/Chika1703/diplom/test-app/icons/Monitoring_1.jpg)  
+- ![Monitoring_2.jpg](https://github.com/Chika1703/diplom/test-app/icons/Monitoring_2.jpg)  
+- ![App_1.jpg](https://github.com/Chika1703/diplom/test-app/icons/App_1.jpg)  
+- ![App_2.jpg](https://github.com/Chika1703/diplom/test-app/icons/App_2.jpg)  
 
 ---
 
