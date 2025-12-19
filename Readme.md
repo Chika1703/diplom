@@ -150,7 +150,7 @@ Terraform полностью управляет жизненным циклом 
 
 Скриншоты, подтверждающие выполнение этапов, находятся в каталоге:
 
-`diplom1/test-app/icons/`
+`diplom1/jpg`
 
 - ![Terraform_1.jpg](https://github.com/Chika1703/diplom/blob/main/jpg/Terraform_1.jpg)  
 - ![Terraform_2.jpg](https://github.com/Chika1703/diplom/blob/main/jpg/Terraform_2.jpg)  
